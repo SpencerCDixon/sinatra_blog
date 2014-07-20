@@ -1,4 +1,4 @@
-sinatra_blog
+Sinatra Blog
 ============
 
 This was my first time exploring the Sinatra Framework

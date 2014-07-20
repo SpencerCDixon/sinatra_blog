@@ -3,6 +3,7 @@ require 'sinatra/flash'
 require 'sinatra/redirect_with_flash'
 require 'sinatra'
 require 'sinatra/activerecord'
+require 'sinatra/captcha'
 require './environments'
 
 enable :sessions
@@ -29,6 +30,11 @@ helpers do
   end
 end
 
+helpers do
+  include Rack::Utils
+  alias_method :h, :escape_html
+end
+
 
 # Create new posts
 get "/posts/create" do
@@ -38,12 +44,13 @@ get "/posts/create" do
 end
 
 post "/posts" do
- @post = Post.new(params[:post])
- if @post.save
-   redirect "posts/#{@post.id}", :notice => 'Congrats! Love the new post. (This message will disapear in 4 seconds.)'
- else
-   redirect "posts/create", :error => 'Something went wrong. Try again. (This message will disapear in 4 seconds.)'
- end
+  halt(401, "invalid captcha") unless captcha_pass?
+  @post = Post.new(params[:post])
+  if @post.save
+    redirect "posts/#{@post.id}", :notice => 'Congrats! Love the new post. (This message will disapear in 4 seconds.)'
+  else
+    redirect "posts/create", :error => 'Something went wrong. Try again. (This message will disapear in 4 seconds.)'
+  end
 end
 
 # View posts
